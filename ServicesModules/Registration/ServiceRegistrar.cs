@@ -1,24 +1,37 @@
 ﻿using System;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 
 namespace ServicesModules.Registration;
 
 public static class ServiceRegistrar
 {
-    public static IServiceCollection AddServicesModules(this IServiceCollection services, Assembly assembly)
+    public static IServiceCollection AddServicesModules(this IServiceCollection services, ConfigurationManager configuration, params Assembly[] assemblies)
     {
-        var moduleType = typeof(IServicesModule);
+        var servicesType = typeof(IServicesModule);
+        var configurationServicesModule = typeof(IConfigurationServicesModule);
+        
+        var definedTypes = assemblies.SelectMany(assembly => assembly.DefinedTypes);
 
-        var modules = assembly.DefinedTypes
-            .Where(type => type is { IsInterface: false, IsAbstract: false }
-                && moduleType.IsAssignableFrom(type))
-            .Select(Activator.CreateInstance)
-            .Cast<IServicesModule>();
-
-        foreach (var module in modules)
+        foreach (var type in definedTypes)
         {
-            module.Register(services);
+            if (type is not { IsInterface: false, IsAbstract: false })
+            {
+                continue;
+            }
+
+            if (servicesType.IsAssignableFrom(type))
+            {
+                var servicesModel = (IServicesModule)Activator.CreateInstance(type);
+                servicesModel.Register(services);
+            }
+
+            if (configurationServicesModule.IsAssignableFrom(type))
+            {
+                var servicesModel = (IConfigurationServicesModule)Activator.CreateInstance(type);
+                servicesModel.Register(services, configuration);
+            }
         }
 
         return services;

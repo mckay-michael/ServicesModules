@@ -11,7 +11,7 @@ public class Program
 
         // Add services to the container.
         builder.Services
-            .AddServicesModules(Assembly.GetExecutingAssembly())
+            .AddServicesModules(builder.Configuration, typeof(Program).Assembly)
             .AddControllersWithViews();
 
         var app = builder.Build();
@@ -34,4 +34,3 @@ public class Program
         app.Run();
     }
 }
-
