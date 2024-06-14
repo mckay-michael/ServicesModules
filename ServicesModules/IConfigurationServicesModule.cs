@@ -8,4 +8,3 @@ public interface IConfigurationServicesModule
 {
     void Register(IServiceCollection services, ConfigurationManager configuration);
 }
-
