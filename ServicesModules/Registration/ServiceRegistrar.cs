@@ -11,6 +11,7 @@ public static class ServiceRegistrar
     {
         var servicesType = typeof(IServicesModule);
         var configurationServicesModule = typeof(IConfigurationServicesModule);
+        var asemblyServicModule = typeof(IAssemblyServiceModule);
 
         var definedTypes = assemblies.SelectMany(assembly => assembly.DefinedTypes);
 
@@ -31,6 +32,12 @@ public static class ServiceRegistrar
             {
                 var servicesModel = (IConfigurationServicesModule)Activator.CreateInstance(type);
                 servicesModel.Register(services, configuration);
+            }
+
+            if (asemblyServicModule.IsAssignableFrom(type))
+            {
+                var servicesModel = (IAssemblyServiceModule)Activator.CreateInstance(type);
+                servicesModel.Register(services, assemblies);
             }
         }
 
